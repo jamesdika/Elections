@@ -1,7 +1,9 @@
+// abstractoin that can interact with our contract
 var Election = artifacts.require("./Election.sol");
 
 contract("Election", function(accounts) {
-  it("initializes with two candidates", function() {
+  // test that the election is initialized with the correct number of candidates
+  it("The election is initialized with two contacts", function() {
     var electionInstance;
 
     return Election.deployed()
@@ -12,7 +14,8 @@ contract("Election", function(accounts) {
         assert.equal(count, 2);
       });
   });
-  it("it initializes the candidates with the correct values", function() {
+  // test to ensure that candidates are iniitialized with the correct values
+  it("The candidates are initialized with the correct values", function() {
     return Election.deployed()
       .then(function(instance) {
         electionInstance = instance;
@@ -30,8 +33,8 @@ contract("Election", function(accounts) {
         assert.equal(candidate[2], 0, "contains the correct votes count");
       });
   });
-
-  it("allows a voter to cast a vote", function() {
+  // Tests that a voter is allowed with smart contract
+  it("The smart contract allows a voter to cast a vote", function() {
     return Election.deployed()
       .then(function(instance) {
         electionInstance = instance;
@@ -61,8 +64,9 @@ contract("Election", function(accounts) {
         assert.equal(voteCount, 1, "increments the candidate's vote count");
       });
   });
-
-  it("throws an exception for invalid candiates", function() {
+  // Test that ensures that all candidates that vote are valid candidates
+  // A candidate with a false id would not be allowed to vote
+  it("An exception is thrown for invalid candidates", function() {
     return Election.deployed()
       .then(function(instance) {
         electionInstance = instance;
@@ -87,7 +91,7 @@ contract("Election", function(accounts) {
       });
   });
 
-  it("throws an exception for double voting", function() {
+  it("An exception is thrown in the case of double voting", function() {
     return Election.deployed()
       .then(function(instance) {
         electionInstance = instance;
@@ -97,7 +101,7 @@ contract("Election", function(accounts) {
       })
       .then(function(candidate) {
         var voteCount = candidate[2];
-        assert.equal(voteCount, 1, "accepts first vote");
+        assert.equal(voteCount, 1, "first vote is accepted");
         // Try to vote again
         return electionInstance.vote(candidateId, { from: accounts[1] });
       })

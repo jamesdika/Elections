@@ -4,18 +4,21 @@ App = {
   account: "0x0",
   hasVoted: false,
 
+  //initializes the app and web3
+  // web3 is a collection of javascript libraries that allows you to interact with
+  // a local or remote ethereum blockchain
   init: function() {
     return App.initWeb3();
   },
-
+  // initializing web3 connects our client to the local blockchain
   initWeb3: function() {
-    // TODO: refactor conditional
     if (typeof web3 !== "undefined") {
-      // If a web3 instance is already provided by Meta Mask.
+      // If a web3 instance is already provided by Meta Mask then set it to our application's
+      // web3 provider
       App.web3Provider = web3.currentProvider;
       web3 = new Web3(web3.currentProvider);
     } else {
-      // Specify default instance if no web3 instance provided
+      // otherwise set the applications web3 provider to the one provided by our local blockchain aka Ganache
       App.web3Provider = new Web3.providers.HttpProvider(
         "http://localhost:7545"
       );
@@ -23,7 +26,7 @@ App = {
     }
     return App.initContract();
   },
-
+  // loads contract into frontend so that we cna interact with it
   initContract: function() {
     $.getJSON("Election.json", function(election) {
       // Instantiate a new truffle contract from the artifact
@@ -40,14 +43,11 @@ App = {
   // Listen for events emitted from the contract
   listenForEvents: function() {
     App.contracts.Election.deployed().then(function(instance) {
-      // Restart Chrome if you are unable to receive this event
-      // This is a known issue with Metamask
-      // https://github.com/MetaMask/metamask-extension/issues/2393
       instance
         .votedEvent(
           {},
           {
-            fromBlock: 0,
+            fromBlock: 0, // subscribe to all events on blockchain
             toBlock: "latest"
           }
         )
@@ -58,7 +58,7 @@ App = {
         });
     });
   },
-
+  // This functions renders the client side
   render: function() {
     var electionInstance;
     var loader = $("#loader");
@@ -75,7 +75,7 @@ App = {
       }
     });
 
-    // Load contract data
+    // This function loads the data of the contract
     App.contracts.Election.deployed()
       .then(function(instance) {
         electionInstance = instance;
@@ -87,14 +87,14 @@ App = {
 
         var candidatesSelect = $("#candidatesSelect");
         candidatesSelect.empty();
-
+        // for each candidate, render a result with the id, name and vote count
         for (var i = 1; i <= candidatesCount; i++) {
           electionInstance.candidates(i).then(function(candidate) {
             var id = candidate[0];
             var name = candidate[1];
             var voteCount = candidate[2];
 
-            // Render candidate Result
+            // This renders the result for each candidate
             var candidateTemplate =
               "<tr><th>" +
               id +
@@ -114,7 +114,7 @@ App = {
         return electionInstance.voters(App.account);
       })
       .then(function(hasVoted) {
-        // Do not allow a user to vote
+        // Hides form if the account has already voted
         if (hasVoted) {
           $("form").hide();
         }
@@ -125,7 +125,8 @@ App = {
         console.warn(error);
       });
   },
-
+  // This function is called when the form is submitted
+  // this registers the actual vote and then displays the updated results
   castVote: function() {
     var candidateId = $("#candidatesSelect").val();
     App.contracts.Election.deployed()
